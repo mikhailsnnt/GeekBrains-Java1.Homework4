@@ -1,4 +1,5 @@
 import com.sun.scenario.effect.impl.sw.java.JSWColorAdjustPeer;
+import javafx.util.Pair;
 
 import java.util.Scanner;
 
@@ -11,9 +12,18 @@ public class TicTacToeGame {
         char[][] field = new char[n][n];
         fillField(field);
         printField(field);
+        int optimalRecursionDepth = 1;//  Cколько ходов в глубину прощитывать
+        if (n == 3)
+            optimalRecursionDepth = 3;
+        if (n == 5)
+            optimalRecursionDepth = 2;
+        ComputerLogic AI = new ComputerLogic(optimalRecursionDepth);
         while (true) {
             playerMove(field, scanner);
-            if(manageGameResult("Player",field))
+            if(manageGameResult(field))
+                break;
+            computerMove(field,AI);
+            if(manageGameResult(field))
                 break;
         }
     }
@@ -59,7 +69,7 @@ public class TicTacToeGame {
     }
 
     static int getCoordinate(char name, int fieldSize, Scanner scanner) {
-        int coordinate = -1;
+        int coordinate ;
         do {
             System.out.printf("Enter %s-coordinate ([1,%s]): %n", name, fieldSize);
             coordinate = scanner.nextInt() - 1;
@@ -78,17 +88,39 @@ public class TicTacToeGame {
         return n;
     }
 
-    static boolean manageGameResult(String lastMoveSubject, char[][] field) {
+    static int getGameResult(char[][] field) {
+        int gameResult = gameWon(field);
+        if (gameResult !=0 )
+            return gameResult;
         if (noEmptyCells(field)) {
-            System.out.println("Tie!");
-            return true;
+            return 1;
         }
-        if (gameWon(field))
-        {
-            System.out.printf("%s won!!",lastMoveSubject);
-            return true;
+        return 0;
+    }
+    static void computerMove(char[][] field, ComputerLogic AI)
+    {
+        Pair<Integer,Integer> move = AI.getOptimalMove(field);
+        System.out.printf("Computer goes : %s %s %n",move.getKey() + 1 , move.getValue() + 1);
+        field[move.getValue()][move.getKey()] = '0';
+        printField(field);
+    }
+    static boolean manageGameResult(char[][] field) {
+        int gameResult = getGameResult(field);
+        switch (gameResult){
+            case 0:
+                return false;
+            case -1:
+                System.out.println("Computer won!!");
+                break;
+            case 2:
+                System.out.println("Player won!!");
+                break;
+            default:
+                System.out.println("Tie!!!");
+                break;
         }
-        return false;
+        return true;
+
     }
 
     static boolean noEmptyCells(char[][] field) {
@@ -101,21 +133,23 @@ public class TicTacToeGame {
         return true;
     }
 
-    static boolean gameWon(char[][] field) {
+    static int gameWon(char[][] field) {
         for(int i = 0;i<field.length;++i)
         {
             if(checkColumn(i,field))
-                return true;
+                return codeOfCell(i,0,field);
             if(checkRow(i,field))
-                return true;
+                return codeOfCell(0,i,field);
         }
-        return checkDiagonals(field);
+        if( checkDiagonals(field))
+            return codeOfCell(field.length/2 , field.length/2,field );
+        return 0;
     }
 
     static boolean checkRow(int rowNum, char[][] field){
         for(int i = 1;i<field.length;++i)
         {
-            if (cellIsEmpty(rowNum, i,field) || field[rowNum][i] != field[rowNum][0])
+            if (cellIsEmpty(i, rowNum,field) || (field[rowNum][i] != field[rowNum][0]))
                 return false;
         }
         return true;
@@ -145,6 +179,15 @@ public class TicTacToeGame {
                 winningDiagonal = false;
         }
         return winningDiagonal;
+    }
+    static int codeOfCell(int x , int y, char[][] field)
+    {
+        if (field[y][x] == 'X')
+            return 2;
+        else if (field[y][x] == '0')
+            return -1;
+        else
+            return 0;
     }
 
 
