@@ -59,8 +59,8 @@ public class TicTacToeGame {
                 System.out.println("It's your turn...");
             else
                 System.out.println("Try again...");
-            x = getCoordinate('H', field.length, scanner);
-            y = getCoordinate('V', field.length, scanner);
+            x = getCoordinate("Horizontal", field.length, scanner);
+            y = field.length - 1 -  getCoordinate("Vertical", field.length, scanner);
             isFirstTry = false;
         }
         while (!cellIsEmpty(x, y, field));
@@ -68,14 +68,14 @@ public class TicTacToeGame {
         printMadeMoveMessage("Player", field);
     }
 
-    static int getCoordinate(char name, int fieldSize, Scanner scanner) {
+    static int getCoordinate(String name, int fieldSize, Scanner scanner) {
         int coordinate ;
         do {
             System.out.printf("Enter %s-coordinate ([1,%s]): %n", name, fieldSize);
             coordinate = scanner.nextInt() - 1;
         }
         while (coordinate < 0 || coordinate >= fieldSize);
-        return coordinate;
+        return  coordinate;
     }
 
     static int getFieldSize(Scanner scanner) {
